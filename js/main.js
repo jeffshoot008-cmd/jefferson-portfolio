@@ -169,17 +169,27 @@ observeReveal(document.querySelectorAll(".reveal"));
 
 /* ---- Stats counter ---- */
 function animateCounter(el) {
-  const target = parseInt(el.dataset.target, 10);
+  const target = parseFloat(el.dataset.target);
+  const isDecimal = el.dataset.decimal === "true";
   const duration = 2000;
   const start = performance.now();
+
+  function formatValue(value) {
+    if (isDecimal) return value.toFixed(1);
+    if (target >= 1000) return Math.floor(value).toLocaleString();
+    return Math.floor(value).toString();
+  }
 
   function tick(now) {
     const progress = Math.min((now - start) / duration, 1);
     const eased = 1 - Math.pow(1 - progress, 3);
-    const value = Math.floor(eased * target);
-    el.textContent = target >= 1000 ? value.toLocaleString() : value;
-    if (progress < 1) requestAnimationFrame(tick);
-    else el.textContent = target >= 1000 ? target.toLocaleString() + "+" : target + "+";
+    const value = eased * target;
+    el.textContent = formatValue(value);
+    if (progress < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      el.textContent = isDecimal ? `${target.toFixed(1)}+` : `${formatValue(target)}+`;
+    }
   }
 
   requestAnimationFrame(tick);
